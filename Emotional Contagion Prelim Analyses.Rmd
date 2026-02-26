@@ -1,0 +1,80 @@
+---
+title: "Emotional Contagion Prelim Analyses"
+author: "Nhung Vu"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#Read data
+*Data Availability: The data for this syntax is associated with a research study currently under review. Therefore, the data are not published and are available upon reasonable request.
+
+```{r}
+data <- read.csv("ECdataclean.csv")
+
+# Ensure gender variables are factors
+data$gender.1 <- as.factor(data$gender.1)
+data$gender.2 <- as.factor(data$gender.2)
+```
+
+#Independent t-test by gender
+```{r}
+# Variables for first t-test
+t.test(data$emoreactP ~ data$gender.1, var.equal = FALSE)
+t.test(data$discP ~ data$gender.1, var.equal = FALSE)
+t.test(data$convoqual.1 ~ data$gender.1, var.equal = FALSE)
+
+# Variables for second t-test
+t.test(data$emoreactR ~ data$gender.2, var.equal = FALSE)
+t.test(data$discR ~ data$gender.2, var.equal = FALSE)
+t.test(data$convoqual.2 ~ data$gender.2, var.equal = FALSE)
+```
+
+```{r}
+#install.packages("effsize")
+library(effsize)
+
+cohen.d(data$emoreactP, data$gender.1)
+cohen.d(data$discP, data$gender.1)
+cohen.d(data$convoqual.1, data$gender.1)
+
+cohen.d(data$emoreactR, data$gender.2)
+cohen.d(data$discR, data$gender.2)
+cohen.d(data$convoqual.2, data$gender.2)
+```
+
+#Effects of dyad gender combination
+```{r}
+# Get min and max gender for each dyad
+data$g1 <- pmin(data$gender.1, data$gender.2)
+data$g2 <- pmax(data$gender.1, data$gender.2)
+
+# Initialize dyad variable
+data$gender_comp <- NA
+
+# Same-gender dyads
+data$gender_comp[data$g1 == 1 & data$g2 == 1] <- 1  # male–male
+data$gender_comp[data$g1 == 2 & data$g2 == 2] <- 2  # female–female
+data$gender_comp[data$g1 == 3 & data$g2 == 3] <- 3  # other–other
+
+# Mixed-gender dyads
+data$gender_comp[data$g1 == 1 & data$g2 == 2] <- 4  # male–female
+data$gender_comp[data$g1 == 1 & data$g2 == 3] <- 5  # male–other
+data$gender_comp[data$g1 == 2 & data$g2 == 3] <- 6  # female–other
+
+# Convert to factor for ANOVA
+data$gender_comp <- as.factor(data$gender_comp)
+
+# One-way ANOVA by dyad category
+library(effectsize)
+
+variables <- c("emoreactP", "discP", "convoqual.1", "emoreactR", "discR", "convoqual.2")
+
+for (var in variables) {
+  formula <- as.formula(paste(var, "~ gender_comp"))
+  fit <- aov(formula, data = data)
+  print(summary(fit))
+  
+  # Eta-squared effect size
+  print(eta_squared(fit))
+}
+```
+
