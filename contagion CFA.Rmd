@@ -1,0 +1,42 @@
+---
+title: "contagion CFA"
+author: "Nhung Vu"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#Read data
+```{r}
+data = read.csv("pre-post-wide2w99.csv", na.strings = "99")
+data
+```
+
+#CFA Model Full
+```{r}
+library(lavaan)
+model_full = 
+"
+  F1 =~ EmotionalReactivityP_1 + EmotionalReactivityP_2 + EmotionalReactivityP_3 + EmotionalReactivityP_4 + EmotionalReactivityP_5
+  
+  F2 =~ EmotionalReactivityR_1 + EmotionalReactivityR_2 + EmotionalReactivityR_3 + EmotionalReactivityR_4 + EmotionalReactivityR_5"
+
+fit = lavaan::cfa(model_full, data = data, std.ov=T, std.lv=T) 
+summary(fit, fit.measures=T)
+```
+
+#CFA Model Provider
+```{r}
+library(lavaan)
+model_P = "F1 =~ EmotionalReactivityP_1 + EmotionalReactivityP_2 + EmotionalReactivityP_3 + EmotionalReactivityP_4 + EmotionalReactivityP_5"
+
+fit_P = lavaan::cfa(model_P, data = data, std.ov=T, std.lv=T) 
+summary(fit_P, fit.measures=T)
+```
+
+#CFA Model Receiver
+```{r}
+library(lavaan)
+model_R = "F1 =~ EmotionalReactivityR_1 + EmotionalReactivityR_2 + EmotionalReactivityR_3 + EmotionalReactivityR_4 + EmotionalReactivityR_5"
+
+fit_R = lavaan::cfa(model_R, data = data, std.ov=T, std.lv=T) 
+summary(fit_R, fit.measures=T)
+```

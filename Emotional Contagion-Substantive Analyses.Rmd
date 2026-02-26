@@ -1,0 +1,507 @@
+---
+title: "Emotional Contagion Substantive Analyses"
+author: "Nhung Vu"
+date: "4/14/2022"
+output: word_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Brief Literature Review & Hypotheses
+
+When faced with a problem, people commonly disclose personal information
+and affect to receive social support. During supportive interactions,
+the support recipient usually have to disclose their stressor in order
+to receive support. Disclosure of stressors often include disclosure of
+negative affect. Exposure to negative affect can drain support providers
+because they may catch the distressed person's negative affect. This
+transmission of emotions is often referred to as emotional contagion.
+Emotional contagion occurs when people converge emotionally (Hatfield et
+al., 1992).
+
+Emotional contagion is especially important in supportive communication
+because providers' emotions can influence how much and the quality of
+support they provide. Emotions have a motivational component, called
+action tendencies, which prompt people to engage in certain behavioral
+responses (Frijda et al., 1989; Lazarus, 1991). In other words, a
+person's affective state influences how they communicate and
+experiencing emotional contagion can also influence people's
+communicative behaviors. In the context of supportive communication, a
+lack of provider resources (i.e., cognitive or emotional resources) may
+limit support provision (Feeney & Collins, 2001, 2003). Thus, it is
+possible that if listening to recipient's disclosure of stressors makes
+providers feel worse, they will be less motivated to provide support.
+
+H1: Changes in providers' positive affect and negative affect predict
+their motivation to provide support.
+
+Previous research suggested that emotions can be transmitted through
+nonverbal behaviors. However, the presence of emotional contagion via
+mediated communication channels, where access to nonverbal cues can be
+limited depending on the channel, has also been documented (for a
+review, see Goldernberg & Gross, 2020). Media richness theory (Daft and
+Lengel, 1986) claimed that different communication channels varied in
+their ability to reproduce "rich" social information (e.g., immediate
+feedback, language variety, personalization, number of cues), thereby
+making some media more appropriate than others for certain tasks. In
+other words, the richness of a communication channel is determined by
+its ability to offer rapid feedback, multiple cues, natural language,
+and personal focus. Under this view, communication channels can be
+arranged on a continuum from lean to rich. Specifically, video chat
+would be considered a richer medium than text and audio chat because
+compared to text and audio chat, people can provide rapid feedback and
+transmit multiple cues more easily through video chat. Furthermore,
+emotional contagion is more likely to occur in richer channels, such as
+video chat, because a larger amount of social information, including
+emotional cues, can be transmitted through these channels. Thus, this
+study proposes:
+
+H2: Participants in the video chat condition will experience a greater
+increase in negative affect and a greater decrease in positive affect
+after the interaction compared to those in the audio chat and text
+conditions.
+
+H3: Participants in the audio chat condition will experience a greater
+increase in negative affect and a greater decrease in positive affect
+after the interaction compared to those in the text condition.
+
+# Description of Data Set
+
+## Study design
+
+The current data set is collected from an experiment conducted over
+Zoom. Participants were asked to bring a conversational partner to the
+lab. Upon arrival, participants were be randomly assigned to either the
+text condition, the voice call condition, or the video chat condition.
+Within each dyad, individuals were be randomly assigned so that a person
+will be the support provider and the other one will be the support
+recipient. Participants were instructed to fill out a pre-interaction
+survey, interact with their conversational for 15 minutes, then fill out
+a post-interaction survey.
+
+## Description of data set
+
+The data set has two components. Participants' responses to the
+pre-interaction survey are recorded in the "ECPre.csv" file.
+Participants' responses to the post-interaction survey are recorded in
+the "ECPost.csv" file.
+
+In both surveys, participants were asked to provide the unique ID they
+were given at the outset of the experiment (i.e., when they first joined
+the researcher's Zoom room). Participants were also asked to indicate
+the role they were assigned to. In the data set, participants who were
+assigned to be providers received a "1" and participants who were
+assigned to be recipients received a "2" for the variable "role".
+
+The ECPre and the ECPost files also contain the following measures that
+are relevant to the current analysis (other variables in the data files
+that are not used in this project will not be reported here):
+
+Participants affect in the moment were be measured with the 20-item
+Positive and Negative Affect Schedule (PANAS; Watson, Clark, & Tellegen,
+1988). Participants were asked to indicate how much they experience a
+variety of the emotional states (e.g., joy, love, sadness) on a
+five-point Likert type scale (1 = very slightly or not at all, 5 =
+extremely). The affect items in the pre-interaction survey are labeled
+**panasPre** and the affect items in the post-interaction survey are
+labeled **panasPost**. Items 1, 3, 5, 9, 10, 12, 14, 16, 17, and 19 were
+used to measure positive affect. Items 2, 4, 6, 7, 8, 11, 13, 15, 18,
+and 20 were used to measure negative affect. (Previous research sum the
+items instead of averaging the items to create composite variables, so I
+will sum the items for the composite variables in this project as well).
+
+Support providers' motivation to provide support was measured after the
+interaction with a 5-item scale adapted from High and Scharp (2015).
+Participants responded to items on a 5-point Likert scale (1 = strongly
+disagree, 5 = strongly agree). These scale items were displayed only to
+participants who indicated in the survey that they were support
+providers during the interaction portion. The items of this scale are
+labeled **motivationP** in the data set.
+
+Finally, the last column of the ECPost data file contains information
+regarding which experimental conditions (i.e., video, voice, or text)
+participants were assigned to.
+
+Next, I am going to create composite variables and calculate variables
+needed to test the hypotheses above. Specifically, the label for the
+composite variables will be:
+
+**paPre** is positive affect pre interaction **nePre** is negative
+affect pre interaction **paPost** is positive affect post interaction
+**naPost** is negative affect post interaction **paDiff** is the
+difference in positive affect between Pre and Post interaction (paPost -
+paPre) **naDiff** is the difference in negative affect between Pre and
+Post interaction (naPost - naPre) **motivationP** is provider's
+motivation to provide support (motivationP)
+
+```{r, warning = FALSE}
+library(psych)
+library(dplyr)
+
+predata=read.csv("ECPre.csv", na.strings = NA) #read in the pre-interaction data file
+postdata=read.csv("ECPost.csv", na.strings = NA) #read in the post-interaction data file
+ecdata=merge(predata,postdata,by=c("ID","role")) #merge the two data files
+
+#create composite variables
+ecdata <- ecdata %>%
+  mutate(paPre = (panasPre_1+panasPre_3+panasPre_5+panasPre_9+panasPre_10+panasPre_12+panasPre_14+panasPre_16+panasPre_17+panasPre_19),
+        naPre = (panasPre_2+panasPre_4+panasPre_6+panasPre_7+panasPre_8+panasPre_11+panasPre_13+panasPre_15+panasPre_18+panasPre_20),
+        paPost = (panasPost_1+panasPost_3+panasPost_5+panasPost_9+panasPost_10+panasPost_12+panasPost_14+panasPost_16+panasPost_17+panasPost_19),
+        naPost = (panasPost_2+panasPost_4+panasPost_6+panasPost_7+panasPost_8+panasPost_11+panasPost_13+panasPost_15+panasPost_18+panasPost_20),
+        paDiff=(paPost-paPre),
+        naDiff=(naPost-naPre),
+        motivationP=(motivationP_1+motivationP_2+motivationP_3+motivationP_4+motivationP_5)/5)
+
+#get descriptive statistics for the variables
+describe(ecdata$paPre)
+describe(ecdata$naPre)
+describe(ecdata$paPost)
+describe(ecdata$naPost)
+describe(ecdata$paDiff)
+describe(ecdata$naDiff)
+describe(ecdata$motivationP)
+```
+
+## Check for abnormalities
+
+```{r, warning=FALSE}
+library(GGally)
+ggpairs(ecdata[,224:231])
+```
+
+The variable **motivationP** is negatively skewed, which could be a
+problem. Besides that, there is nothing that is obviously unusual in the
+other variables of interest based on the ggpairs plot. The variables
+**paDiff** and **naDiff** are generally normally distributed.
+
+To resolve the skewness in the variable "motivationP," I will log
+transform the variable
+
+```{r}
+#histogram for raw motivationP variable
+hist(filter(ecdata,role==1)$motivationP)
+
+#log transform motivationP variable
+ecdata$motivationP_log = log(ecdata$motivationP)
+hist(filter(ecdata,role==1)$motivationP_log)
+```
+
+The log of **motivationP** still does not look normally distributed. So,
+I will run two regression equations to test the first hypothesis where
+motivation is a variable of interest. The fist regression will use the
+untransformed motivation variable (i.e., "motivationP") and the second
+regression will use the log of motivation variable (i.e.,
+"motivationP_log").
+
+# Analyses
+
+## H1: Changes in providers' positive affect and negative affect predict their motivation to provide support.
+
+To test this hypothesis, I am going to construct a multiple regression
+equation with providers' change in positive and negative affect as
+predictors. I am choosing to multiple regression here because I want to
+estimate the relationship between two predictors and a dependent
+variable. I could use two simple linear regression equations to estimate
+the effect of positive affect on motivation and negative affect on
+motivation separately; however, based on the literature on affect, the
+assumption that positive affect and negative affect independently
+influence an outcome is unrealistic. Therefore, I entered both
+predictors into one equation.
+
+Furthermore, providers' positive and negative affect are also included
+in the equation as control variable because providers' affect before
+interaction could influence their motivation to seek support. To ensure
+the influence of these variables on the outcome is accounted for, they
+are included in the model.
+
+Finally, positive affect and negative affect will not be allowed to
+interact because previous research has suggested that positive affect
+and negative affect are orthogonal dimensions of affect (Watson, 1988).
+In other words, no interaction term will be entered into the equation.
+
+```{r, warning = FALSE}
+#create models to test H1
+
+#raw motivation as outcome
+H1_model=lm(motivationP~paPre+naPre+paDiff+naDiff,data=filter(ecdata,role==1)) 
+summary(H1_model)
+
+#transformed motivation as outcome
+H1tf_model=lm(motivationP_log~paPre+naPre+paDiff+naDiff,data=filter(ecdata,role==1)) 
+summary(H1tf_model) 
+
+#create diagnostic plots to check for violations of MLR assumptions
+#model with raw motivation
+plot(H1_model)
+#model with transformed motivation
+plot(H1tf_model)
+
+confint(H1_model,level=0.95)
+```
+
+Note: The diagnostic plots for the model in which the raw motivation
+variable (i.e., motivationP) was used as outcome are very similar to the
+diagnostic plots for the model in which the log transformed motivation
+variable (i.e., motivationP_log) was used as the outcome variable. In
+other words, the distribution of the residuals is similar for both
+models. For ease of interpretation, I am going to move forward with the
+untransformed model.
+
+Comments on diagnostic plots:
+
+Residuals vs. Fitted plot: The red line is roughly horizontal. There's
+some curvature to the left of the plot, but given the small sample size,
+this is fine for now.
+
+Normal QQ plot: There is noticeable deviation from the diagonal line
+between the first and the second theoretical quantiles. Thus, residuals
+may not be normally distributed.
+
+Scale-Location plot: Generally, this plot looks normal. The red line is
+roughly horizontal. Point #36 may be an outlier.
+
+Residuals vs. Leverage plot: There may be some high leverage points in
+the data set. However, they still fall within acceptable Cook's distance
+range, so I am going to retain them.
+
+Overall, there is no obvious violation of multiple linear regression
+assumptions. So, I am going to move forward with the results above.
+
+## H2 & H3
+
+**H2**: Participants in the video chat condition will experience a
+greater increase in negative affect and a greater decrease in positive
+affect after the interaction compared to those in the audio chat and
+text conditions.
+
+**H3**: Participants in the audio chat condition will experience a
+greater increase in negative affect and a greater decrease in positive
+affect after the interaction compared to those in the text condition.
+
+To test H2 and H3, first, I will dummy code the **channel** variable. I
+choose the dummy coding scheme here because I want to compare conditions
+with one another. Effect coding will let me compare groups' means with
+the grand mean, which is not a comparison of interest in the current
+project. I could also use contrast coding here; however, H2 and H3 make
+very similar comparisons and dummy coding can answer both questions
+without introducing complexity into the coding scheme.
+
+After dummy coding the variable **channel**, I am going to run 2
+multiple regression models to test H2 and H3. The first model will
+estimate the effect of channel on positive affect, and the second model
+will estimate the effect of channel on negative affect. I am running
+multiple regression here because there are more than one predictor in
+each model. Again, participants' affect before the interaction will be
+entered into the equations as a control variable. Then, two dummy
+variables (i.e., isVideo and isVoice) for channel will be entered as
+predictors.
+
+Because these first two models will not provide the comparison between
+the video and voice conditions, I am going to make the voice condition
+the reference group in the next two models.
+
+```{r, warning = FALSE}
+#dummy coding channel variable
+ecdata$isVideo = as.integer(ecdata$channel == "video")
+ecdata$isVoice = as.integer(ecdata$channel == "voice")
+ecdata$isText = as.integer(ecdata$channel == "text")
+
+#model with positive affect as outcome (comparisons tested: video vs. text and voice vs. text)
+H2pa_model=lm(paDiff~paPre+isVideo+isVoice,data=ecdata)
+summary(H2pa_model)
+confint(H2pa_model,level=0.95)
+
+#model with negative affect as outcome (comparisons tested: video vs. text and voice vs. text)
+summary(lm(naDiff~naPre+isVideo+isVoice,data=ecdata))
+confint(lm(naDiff~naPre+isVideo+isVoice,data=ecdata),level=0.95)
+
+#model with positive affect as outcome(comparison tested: video vs. voice)
+summary(lm(paDiff~paPre+isVideo+isText,data=ecdata))
+confint(lm(paDiff~paPre+isVideo+isText,data=ecdata),level=0.95)
+
+
+#model with negative affect as outcome (comparison tested: video vs. voice)
+summary(lm(naDiff~naPre+isVideo+isText,data=ecdata))
+confint(lm(naDiff~naPre+isVideo+isText,data=ecdata),level=0.95)
+
+
+```
+
+# Results
+
+The first hypothesis states that changes in providers' positive affect
+and negative affect predict their motivation to provide support. To test
+this hypothesis, a multiple linear regression was carried out.
+Providers' motivation to provide support was entered as the dependent
+variable. Provider's positive affect and negative affect before the
+interaction were entered as control variables and the change in positive
+affect and change in negative affect were entered as predictors. The
+results of the regression indicated that the model explained 7.27% of
+the variance and that the model was not significant, F(2,49) = 0.90,p =
+0.4713. Providers' motivation to provide support was not predicted by
+the changes their positive affect (β = 0.024, p = 0.103) or negative
+affect (β = 0.019, p = 0.528). Thus, the first hypothesis was not
+supported.
+
+The second hypothesis states that participants in the video chat
+condition will experience a greater increase in negative affect and a
+greater decrease in positive affect after the interaction compared to
+those in the audio chat and text conditions. Additionally, the third
+hypothesis states that participants in the audio chat condition will
+experience a greater increase in negative affect and a greater decrease
+in positive affect after the interaction compared to those in the text
+condition.To test these hypotheses, four multiple linear regression was
+conducted.
+
+In the first regression constructed to test H2 and H3, participants'
+change in positive affect was entered as the outcome variable.
+Participants' positive affect before the interaction was entered as a
+control variable. Dummy variables created for the video and voice
+conditions were entered as predictors. The results of the regression
+indicated that the model explained 5.40% of the variance and that the
+model was not significant, F(3,100) = 1.902,p = 0.1324. Whether
+participants were in the text, voice, or video condition did not predict
+the change in their positive affect. The difference in the change in
+positive affect between the voice and the text condition was not
+significant (β = 0.49, p = 0.72). The difference in the change in
+positive affect between the video and the text condition was also not
+significant (β = 0.82, p = 0.54).
+
+In the second regression constructed to test H2 and H3, participants'
+change in negative affect was entered as the outcome variable.
+Participants' negative affect before the interaction was entered as a
+control variable. Dummy variables created for the video and voice
+conditions were entered as predictors. The results of the regression
+indicated that the model explained 44.5% of the variance and that the
+model was significant, F(3,99) = 26.44,p \< 0.001. However, whether
+participants were in the text, voice, or video condition did not predict
+the change in their negative affect. The difference in the change in
+negative affect between the voice and the text condition was not
+significant (β = 0.63, p = 0.42). The difference in the change in
+negative affect between the video and the text condition was also not
+significant (β = 0.08, p = 0.92).
+
+The third and fourth regression equations that were constructed to test
+H2 and H3 focus on testing the comparisons between the video condition
+against the voice condition. The difference in the change in negative
+affect between the video and the voice condition was not significant (β
+= 0.33, p = 0.80). The difference in the change in positive affect
+between the video and the voice condition was also not significant (β =
+0.54, p = 0.47). Overall, the second and the third hypotheses were not
+supported.
+
+# Interpretations of Results
+
+The results suggest that changes in providers' positive and negative
+affect did not predict their motivation to provide support. Furthermore,
+the experimental conditions participants were assigned to did not
+predict changes in their positive or negative affect from before the
+interaction to after the interaction. It is possible that other factors
+influence participants' changes in affect. It is also possible that the
+current sample size is not large enough to detect an effect. (note: this
+is an ongoing project, we are still collecting data)
+
+## Describe what results would have meant if they were significant.
+
+The results from the first regression model (i.e., model constructed to
+test H1) would suggest that changes in providers' positive and negative
+affect predict their motivation to provide support. Specifically,
+providers' positive affect would be positively associated with their
+motivation to provide support while holding the other variables
+constant. Similarly, providers' negative affect would be positively
+associated (based on the coefficient calculated above) with their
+motivation to provide support while holding the other variables
+constant.
+
+The results from models testing H2 and H3 would suggest that
+participants' changes in positive affect and negative affect were
+predicted by the experimental conditions they were assigned to.
+Specifically, participants in the video condition would experience a
+greater increase in both positive and negative affect after the
+interaction compared to participants in the text condition. Participants
+in the voice condition would also experience a greater increase in both
+positive and negative affect after the interaction compared to
+participants in the text condition.
+
+For the models that were constructed so that the voice condition was the
+reference group, we would see that participants in the video condition
+would experience a greater increase in both positive and negative affect
+after the interaction compared to participants in the voice condition.
+
+# Plots
+
+## H1 results
+
+```{r, warning = FALSE}
+library(interactions)
+interact_plot(H1_model, paDiff, naDiff, modxvals = NULL, interval = TRUE, int.type = "confidence", int.width = 0.95, outcome.scale = "response", x.label = "change in positive affect", y.label = "motivation to provide support", modx.labels = "change in negative affect", main.title = "Hypothesis 1", legend.main = "change in negative affect", color.class = NULL, line.thickness = 1.1, vary.lty = TRUE)
+```
+
+## H2 & H3 results
+
+```{r, warning = FALSE}
+library(ggplot2)
+ecdata$channel=as.factor(ecdata$channel)
+ecdata %>%
+ ggplot(aes(x = paPre, y = paDiff, color = channel))+
+ geom_point()+
+ geom_smooth(method = "lm")+ #channel-specific regression lines
+  xlab("positive affect before interaction")+ylab("change in positive affect")+
+  ggtitle("Hypotheses 2 and 3 (positive affect)")
+```
+
+```{r, warning=FALSE}
+ecdata %>%
+ ggplot(aes(x = naPre, y = naDiff, color = channel))+
+ geom_point()+
+ geom_smooth(method = "lm")+ #channel-specific regression lines
+  xlab("positive affect before interaction")+ylab("change in positive affect")+
+  ggtitle("Hypotheses 2 and 3 (negative affect)")
+```
+
+# References
+
+Daft, R. L., Lengel, R. H., & Trevino, L. K. (1987). Message
+equivocality, media selection, and manager performance: Implications for
+information systems. MIS Quarterly, 11, 355--366. <doi:10.2307/248682>
+
+Feeney, B. C., & Collins, N. L. (2001). Predictors of caregiving in
+adult intimate relationships: an attachment theoretical perspective.
+Journal of personality and social psychology, 80(6), 972.
+
+Feeney, B. C., & Collins, N. L. (2003). Motivations for caregiving in
+adult intimate relationships: Influences on caregiving behavior and
+relationship functioning. Personality and Social Psychology Bulletin,
+29(8), 950-968.
+
+Frijda, N. H., Kuipers, P., & ter Schure, E. (1989). Relations among
+emotion, appraisal, and emotional action readiness. Journal of
+Personality and Social Psychology, 57(2), 212--228.
+<https://doi.org/10.1037/0022-3514.57.2.212>
+
+Goldenberg, A., & Gross, J. J. (2020). Digital Emotion Contagion. Trends
+in Cognitive Sciences, 24(4), 316--328.
+<https://doi.org/10.1016/j.tics.2020.01.009>
+
+Hatfield, E., Cacioppo, J. T., & Rapson, R. L. (1992). Primitive
+emotional contagion. In M. S. Clark (Ed.), Emotion and social behavior
+(pp. 151--177). Sage Publications, Inc.
+
+High, A. C., & Scharp, K. M. (2015). Examining family communication
+patterns and seeking social support direct and indirect effects through
+ability and motivation. Human Communication Research, 41(4), 459-479.
+<doi:10.1111/hcre.12061>
+
+Lazarus, R. S. (1991). Cognition and motivation in emotion. American
+Psychologist, 46, 352--367.
+
+Watson, D. (1988). The vicissitudes of mood measurement: effects of
+varying descriptors, time frames, and response formats on measures of
+positive and negative affect. Journal of Personality and social
+Psychology, 55(1), 128.
+
+Watson, D., Clark, L. A., & Tellegen, A. (1988). Development and
+validation of brief measures of positive and negative affect: The PANAS
+scales. Journal of Personality and Social Psychology, 54(6), 1063--1070.
+<https://doi.org/10.1037/0022-3514.54.6.1063>
